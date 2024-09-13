@@ -25,12 +25,8 @@ const Downloader = require('electron-dl-downloader');
 
 const dl = new Downloader('https://xx.exe', 'D:\\oo.exe');
 
-try {
-    const item = await dl.download()
-    const state = await dl.whenDone()
-} catch (e) {
-    console.log(e)
-}
+const item = await dl.download()
+const state = await dl.whenDone()
 
 if (state === Downloader.STATES.completed) {
     console.log('Download successfully')
@@ -52,7 +48,8 @@ item.on('updated', (event, state) => {
     }
 })
 
-item.pause();
+item.pause()
+
 ```
 
 
