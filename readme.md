@@ -22,9 +22,10 @@ npm i electron-dl-downloader
 
 ```js
 const Downloader = require('electron-dl-downloader');
-
 const dl = new Downloader('https://xx.exe', 'D:\\oo.exe');
+```
 
+```js
 const item = await dl.download()
 const state = await dl.whenDone()
 
@@ -33,8 +34,11 @@ if (state === Downloader.STATES.completed) {
 } else {
     console.log(`Download failed: ${state}`)
 }
+```
+Electron DownloadItem events and methods are also supported.https://www.electronjs.org/docs/latest/api/download-item
+```js
 
-//Electron DownloadItem events and methods are also supported
+const item = await dl.download()
 
 item.on('updated', (event, state) => {
     if (state === Downloader.STATES.interrupted) {
@@ -49,9 +53,7 @@ item.on('updated', (event, state) => {
 })
 
 item.pause()
-
 ```
-
 
 ## API
 
