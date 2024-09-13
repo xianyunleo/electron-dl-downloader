@@ -3,7 +3,7 @@ const {session} = require('electron');
 const sleep = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms));
 };
-const ElectronDownload = class ElectronDownload {
+const Downloader = class Downloader {
     _filePath = "";
     _options = {};
     static  _filePathMap = new Map();
@@ -28,12 +28,12 @@ const ElectronDownload = class ElectronDownload {
     }
 
     static _init() {
-        if (ElectronDownload._initVal) return; //只监听一次，不和用户自己的will-download冲突
-        ElectronDownload._initVal = true;
+        if (Downloader._initVal) return; //只监听一次，不和用户自己的will-download冲突
+        Downloader._initVal = true;
         session.defaultSession.on("will-download", (event, item) => {
             const itemUrl = item.getURLChain()[0];
-            item.setSavePath(ElectronDownload._filePathMap.get(itemUrl));
-            ElectronDownload._downloadItemMap.set(itemUrl, item);
+            item.setSavePath(Downloader._filePathMap.get(itemUrl));
+            Downloader._downloadItemMap.set(itemUrl, item);
         });
     }
 
@@ -42,8 +42,8 @@ const ElectronDownload = class ElectronDownload {
      * @returns {Promise<DownloadItem>}
      */
     async download() {
-        ElectronDownload._init();
-        ElectronDownload._filePathMap.set(this._url, this._filePath);
+        Downloader._init();
+        Downloader._filePathMap.set(this._url, this._filePath);
         const opts = this._options.headers ? {headers: this._options.headers} : {};
         session.defaultSession.downloadURL(this._url, opts);
         return await this._getDownloadItem();
@@ -53,7 +53,7 @@ const ElectronDownload = class ElectronDownload {
         this._options.timeout = this._options.timeout ?? 30; //second
         const times = this._options.timeout * 10;
         for (let i = 0; i < times; i++) {
-            const item = ElectronDownload._downloadItemMap.get(this._url);
+            const item = Downloader._downloadItemMap.get(this._url);
             if (item && item.getReceivedBytes() > 0) {
                 return item;
             }
@@ -67,7 +67,7 @@ const ElectronDownload = class ElectronDownload {
      * @returns {Promise<string>}
      */
     async whenDone() {
-        const item = ElectronDownload._downloadItemMap.get(this._url);
+        const item = Downloader._downloadItemMap.get(this._url);
         return new Promise((resolve, reject) => {
             item.once("done", (event, state) => {
                 resolve(state);
@@ -90,4 +90,4 @@ const ElectronDownload = class ElectronDownload {
     }
 }
 
-module.exports = ElectronDownload;
+module.exports = Downloader;

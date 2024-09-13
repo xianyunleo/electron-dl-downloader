@@ -1,4 +1,4 @@
-# electron-download
+# electron-dl-downloader
 
 > Electron app simple and easy to use download manager, support for multiple downloads
 
@@ -13,7 +13,7 @@
 ## Install
 
 ```sh
-npm i electron-download
+npm i electron-dl-downloader
 ```
 
 *Requires Electron 22 or later.*
@@ -21,9 +21,9 @@ npm i electron-download
 ## Usage
 
 ```js
-const ElectronDownload = require('electron-download');
+const Downloader = require('electron-dl-downloader');
 
-const dl = new ElectronDownload('https://xx.exe', 'D:\\oo.exe');
+const dl = new Downloader('https://xx.exe', 'D:\\oo.exe');
 
 try {
     const item = await dl.download()
@@ -32,7 +32,7 @@ try {
     console.log(e)
 }
 
-if (state === ElectronDownload.STATES.completed) {
+if (state === Downloader.STATES.completed) {
     console.log('Download successfully')
 } else {
     console.log(`Download failed: ${state}`)
@@ -41,9 +41,9 @@ if (state === ElectronDownload.STATES.completed) {
 //Electron DownloadItem events and methods are also supported
 
 item.on('updated', (event, state) => {
-    if (state === ElectronDownload.STATES.interrupted) {
+    if (state === Downloader.STATES.interrupted) {
         console.log('Download is interrupted but can be resumed')
-    } else if (state === ElectronDownload.STATES.progressing) {
+    } else if (state === Downloader.STATES.progressing) {
         if (item.isPaused()) {
             console.log('Download is paused')
         } else {
@@ -60,7 +60,7 @@ item.pause();
 
 It can only be used in the [main](https://electronjs.org/docs/glossary/#main-process) process.
 
-## Class: `ElectronDownload`
+## Class: `Downloader`
 
 
 #### `constructor()`
