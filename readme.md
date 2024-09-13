@@ -35,7 +35,8 @@ if (state === Downloader.STATES.completed) {
     console.log(`Download failed: ${state}`)
 }
 ```
-Electron DownloadItem events and methods are also supported.https://www.electronjs.org/docs/latest/api/download-item
+Electron DownloadItem events and methods are also supported.\
+https://www.electronjs.org/docs/latest/api/download-item
 ```js
 
 const item = await dl.download()
