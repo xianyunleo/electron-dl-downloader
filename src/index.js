@@ -42,8 +42,10 @@ const Downloader = class Downloader {
      * @returns {Promise<DownloadItem>}
      */
     async download() {
-        Downloader._init();
+        //reset map key
         Downloader._filePathMap.set(this._url, this._filePath);
+        Downloader._downloadItemMap.delete(this._url)
+        Downloader._init();
         const opts = this._options.headers ? {headers: this._options.headers} : {};
         session.defaultSession.downloadURL(this._url, opts);
         return await this._getDownloadItem();
@@ -69,9 +71,13 @@ const Downloader = class Downloader {
     async whenDone() {
         const item = Downloader._downloadItemMap.get(this._url);
         return new Promise((resolve, reject) => {
-            item.once("done", (event, state) => {
-                resolve(state);
-            });
+            if (item.isDone()) {  //see console.log(item)
+                resolve(item.getState());
+            } else {
+                item.once("done", (event, state) => {
+                    resolve(state);
+                });
+            }
         });
     }
 
