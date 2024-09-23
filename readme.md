@@ -16,8 +16,6 @@
 npm i electron-dl-downloader
 ```
 
-*Requires Electron 22 or later.*
-
 ## Usage
 
 ```js
@@ -70,7 +68,7 @@ constructor(url: string, savePath:string ,options:object)
 //options optional
 {
     headers, //Electron downloadURL options headers
-    timeout  //second，default 30
+    timeout  //second，default 60
 }
 ```
 

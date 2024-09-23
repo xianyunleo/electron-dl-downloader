@@ -1,14 +1,14 @@
 const {session} = require('electron');
+const events = require('events');
 
-const sleep = (ms) => {
-    return new Promise(resolve => setTimeout(resolve, ms));
-};
 const Downloader = class Downloader {
+    _url = "";
     _filePath = "";
     _options = {};
-    static  _filePathMap = new Map();
-    static  _downloadItemMap = new Map();
-    static  _initVal = false;
+    _downloadItem;
+    static _initVal = false;
+    static _filePathMap = new Map();
+    static _eventEmitter = new events.EventEmitter();
 
     /**
      * Electron downloadItem state object
@@ -22,7 +22,7 @@ const Downloader = class Downloader {
     };
 
     constructor(url, filePath, options = {}) {
-        this._url = url;
+        this._url = encodeURI(url);
         this._filePath = filePath;
         this._options = options ?? {};
     }
@@ -32,8 +32,8 @@ const Downloader = class Downloader {
         Downloader._initVal = true;
         session.defaultSession.on("will-download", (event, item) => {
             const itemUrl = item.getURLChain()[0];
+            Downloader._eventEmitter.emit(itemUrl, item);
             item.setSavePath(Downloader._filePathMap.get(itemUrl));
-            Downloader._downloadItemMap.set(itemUrl, item);
         });
     }
 
@@ -42,9 +42,7 @@ const Downloader = class Downloader {
      * @returns {Promise<DownloadItem>}
      */
     async download() {
-        //reset map key
         Downloader._filePathMap.set(this._url, this._filePath);
-        Downloader._downloadItemMap.delete(this._url)
         Downloader._init();
         const opts = this._options.headers ? {headers: this._options.headers} : {};
         session.defaultSession.downloadURL(this._url, opts);
@@ -52,16 +50,22 @@ const Downloader = class Downloader {
     }
 
     async _getDownloadItem() {
-        this._options.timeout = this._options.timeout ?? 30; //second
-        const times = this._options.timeout * 10;
-        for (let i = 0; i < times; i++) {
-            const item = Downloader._downloadItemMap.get(this._url);
-            if (item && item.getReceivedBytes() > 0) {
-                return item;
+        return new Promise(async (resolve, reject) => {
+            this._options.timeout = this._options.timeout ?? 60; //second
+            const timeout = this._options.timeout * 1000;
+            const timeoutId = setTimeout(() => {
+                Downloader._eventEmitter.off(this._url, callback)
+                reject(`Download timeout: ${this._url}`);
+            }, timeout);
+
+            const callback = (downloadItem) => {
+                resolve(downloadItem);
+                this._downloadItem = downloadItem;
+                clearTimeout(timeoutId);
             }
-            await sleep(100);
-        }
-        throw new Error(`Download timeout: ${this._url}`);
+            Downloader._eventEmitter.once(this._url, callback);
+        });
+
     }
 
     /**
@@ -69,7 +73,7 @@ const Downloader = class Downloader {
      * @returns {Promise<string>}
      */
     async whenDone() {
-        const item = Downloader._downloadItemMap.get(this._url);
+        const item = this._downloadItem;
         return new Promise((resolve, reject) => {
             if (item.isDone()) {  //see console.log(item)
                 resolve(item.getState());
