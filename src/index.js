@@ -1,13 +1,18 @@
-const {session} = require('electron');
+const {app, session} = require('electron');
 const events = require('events');
+const path = require('path');
 
 const Downloader = class Downloader {
+    _params = {}
     _url = "";
     _filePath = "";
-    _options = {};
+    _dir = "";
+    _fileName = "";
     _downloadItem;
     static _initVal = false;
     static _filePathMap = new Map();
+    static _dirMap = new Map();
+    static _fileNameMap = new Map();
     static _eventEmitter = new events.EventEmitter();
 
     /**
@@ -21,10 +26,15 @@ const Downloader = class Downloader {
         interrupted: "interrupted"
     };
 
-    constructor(url, filePath, options = {}) {
-        this._url = encodeURI(url);
-        this._filePath = filePath;
-        this._options = options ?? {};
+    constructor(params) {
+        this._params = params
+        this._url = encodeURI(params.url);
+        if(params.filePath){
+            this._filePath = params.filePath;
+        }else{
+            this._dir = params.directory ?? app.getPath('downloads');
+            this._fileName = params.fileName;
+        }
     }
 
     static _init() {
@@ -33,7 +43,14 @@ const Downloader = class Downloader {
         session.defaultSession.on("will-download", (event, item) => {
             const itemUrl = item.getURLChain()[0];
             Downloader._eventEmitter.emit(itemUrl, item);
-            item.setSavePath(Downloader._filePathMap.get(itemUrl));
+            let savePath = Downloader._filePathMap.get(itemUrl)
+            if (!savePath) {
+                let fileName = Downloader._fileNameMap.get(itemUrl)
+                console.log('fileName',fileName)
+                fileName = fileName ? fileName : item.getFilename();
+                savePath = path.join(Downloader._dirMap.get(itemUrl), fileName)
+            }
+            item.setSavePath(savePath);
         });
     }
 
@@ -43,16 +60,17 @@ const Downloader = class Downloader {
      */
     async download() {
         Downloader._filePathMap.set(this._url, this._filePath);
+        Downloader._dirMap.set(this._url, this._dir);
+        Downloader._fileNameMap.set(this._url, this._fileName);
         Downloader._init();
-        const opts = this._options.headers ? {headers: this._options.headers} : {};
-        session.defaultSession.downloadURL(this._url, opts);
+        session.defaultSession.downloadURL(this._url, this._params.options);
         return await this._getDownloadItem();
     }
 
     async _getDownloadItem() {
         return new Promise(async (resolve, reject) => {
-            this._options.timeout = this._options.timeout ?? 60; //second
-            const timeout = this._options.timeout * 1000;
+            this._params.timeout = this._params.timeout ?? 60; //second
+            const timeout = this._params.timeout * 1000;
             const timeoutId = setTimeout(() => {
                 Downloader._eventEmitter.off(this._url, callback)
                 reject(`Download timeout: ${this._url}`);

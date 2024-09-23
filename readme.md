@@ -20,7 +20,9 @@ npm i electron-dl-downloader
 
 ```js
 const Downloader = require('electron-dl-downloader');
-const dl = new Downloader('https://xx.exe', 'D:\\oo.exe');
+const dl = new Downloader({url:'https://xx.exe', filePath:'D:\\Downloads\\oo.exe'});
+//const dl = new Downloader({url:'https://xx.exe', directory:'D:\\Downloads'});
+//const dl = new Downloader({url:'https://xx.exe', directory:'D:\\Downloads', fileName:'oo.exe'});
 ```
 
 ```js
@@ -64,11 +66,14 @@ It can only be used in the [main](https://electronjs.org/docs/glossary/#main-pro
 #### `constructor()`
 
 ``` typescript
-constructor(url: string, savePath:string ,options:object)
-//options optional
+constructor(params)
 {
-    headers, //Electron downloadURL options headers
-    timeout  //second，default 60
+    url:string, //Electron downloadURL options headers
+    filePath:string, //such as "D:\\Downloads\\oo.exe"
+    directory:string, //such as "D:\\Downloads". default:Directory for a user's downloads.
+    fileName:string //such as "oo.exe". default:Electron downloadItem.getFilename()
+    timeout:int  //second. default 60
+    options:object //Electron downloadURL options
 }
 ```
 
