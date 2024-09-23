@@ -26,12 +26,19 @@ const Downloader = class Downloader {
         interrupted: "interrupted"
     };
 
-    constructor(params) {
+    constructor(params = {
+        url: String,
+        filePath: String,
+        directory: String,
+        fileName: String,
+        timeout: Number,
+        options: Object
+    }) {
         this._params = params
         this._url = encodeURI(params.url);
-        if(params.filePath){
+        if (params.filePath) {
             this._filePath = params.filePath;
-        }else{
+        } else {
             this._dir = params.directory ?? app.getPath('downloads');
             this._fileName = params.fileName;
         }
@@ -46,7 +53,6 @@ const Downloader = class Downloader {
             let savePath = Downloader._filePathMap.get(itemUrl)
             if (!savePath) {
                 let fileName = Downloader._fileNameMap.get(itemUrl)
-                console.log('fileName',fileName)
                 fileName = fileName ? fileName : item.getFilename();
                 savePath = path.join(Downloader._dirMap.get(itemUrl), fileName)
             }
