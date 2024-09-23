@@ -65,9 +65,10 @@ It can only be used in the [main](https://electronjs.org/docs/glossary/#main-pro
 
 #### `constructor()`
 
-``` typescript
+```
 constructor(params)
-{
+
+params: {
     url:string, //Electron downloadURL options headers
     filePath:string, //such as "D:\\Downloads\\oo.exe"
     directory:string, //such as "D:\\Downloads". default:Directory for a user's downloads.
