@@ -73,7 +73,7 @@ params: {
     filePath: string, //such as "D:\\Downloads\\oo.exe"
     directory: string, //such as "D:\\Downloads". default:Directory for a user's downloads.
     fileName: string, //such as "oo.exe". default:Electron downloadItem.getFilename()
-    timeout: int,  //second. default 60
+    timeout: number,  //second. default 60
     options: object //Electron downloadURL options
 }
 ```

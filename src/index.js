@@ -26,14 +26,16 @@ const Downloader = class Downloader {
         interrupted: "interrupted"
     };
 
-    constructor(params = {
-        url: String,
-        filePath: String,
-        directory: String,
-        fileName: String,
-        timeout: Number,
-        options: Object
-    }) {
+    /**
+     * @param {Object} params
+     * @param {string} params.url
+     * @param {string} [params.filePath]
+     * @param {string} [params.directory]
+     * @param {string} [params.fileName]
+     * @param {number} [params.timeout=60]
+     * @param {Object} [params.options]
+     */
+    constructor(params) {
         this._params = params
         this._url = encodeURI(params.url);
         if (params.filePath) {
