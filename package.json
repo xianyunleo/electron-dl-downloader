@@ -1,6 +1,6 @@
 {
   "name": "electron-dl-downloader",
-  "version": "2.0.3",
+  "version": "2.0.5",
   "description": "Electron app simple and easy to use download manager, support for multiple downloads.Electron应用简单和易用的下载管理，支持多任务下载",
   "main": "src/index.js",
   "scripts": {
