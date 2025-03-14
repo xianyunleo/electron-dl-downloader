@@ -55,7 +55,11 @@ const Downloader = class Downloader {
             if (!savePath) {
                 let fileName = Downloader._fileNameMap.get(itemUrl)
                 fileName = fileName ? fileName : item.getFilename();
-                savePath = path.join(Downloader._dirMap.get(itemUrl), fileName)
+                const dir = Downloader._dirMap.get(itemUrl)
+                if(!dir){
+                    throw new Error('Url Mismatch.\n'+itemUrl)
+                }
+                savePath = path.join(dir, fileName)
             }
             item.setSavePath(savePath);
         });
