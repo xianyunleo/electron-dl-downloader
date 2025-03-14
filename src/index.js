@@ -32,7 +32,6 @@ const Downloader = class Downloader {
      * @param {string} [params.filePath]
      * @param {string} [params.directory]
      * @param {string} [params.fileName]
-     * @param {number} [params.timeout=60]
      * @param {Object} [params.options]
      */
     constructor(params) {
@@ -77,21 +76,12 @@ const Downloader = class Downloader {
 
     async _getDownloadItem() {
         return new Promise(async (resolve, reject) => {
-            this._params.timeout = this._params.timeout ?? 60; //second
-            const timeout = this._params.timeout * 1000;
-            const timeoutId = setTimeout(() => {
-                Downloader._eventEmitter.off(this._url, callback)
-                reject(`Download timeout: ${this._url}`);
-            }, timeout);
-
             const callback = (downloadItem) => {
                 resolve(downloadItem);
                 this._downloadItem = downloadItem;
-                clearTimeout(timeoutId);
             }
             Downloader._eventEmitter.once(this._url, callback);
         });
-
     }
 
     /**
