@@ -7,7 +7,6 @@
 - Simple to use, few call parameters
 - No electron window object is required
 - Support for multiple downloads (Associate by url)
-- Support timeout
 - Perfect compatibility with electron api
 
 ## Install
