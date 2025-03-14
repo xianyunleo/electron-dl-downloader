@@ -3,16 +3,10 @@ const events = require('events');
 const path = require('path');
 
 const Downloader = class Downloader {
-    _params = {}
     _url = "";
-    _filePath = "";
-    _dir = "";
-    _fileName = "";
     _downloadItem;
     static _initVal = false;
-    static _filePathMap = new Map();
-    static _dirMap = new Map();
-    static _fileNameMap = new Map();
+    static _paramsMap =  new Map();
     static _eventEmitter = new events.EventEmitter();
 
     /**
@@ -37,32 +31,8 @@ const Downloader = class Downloader {
     constructor(params) {
         this._params = params
         this._url = encodeURI(params.url);
-        if (params.filePath) {
-            this._filePath = params.filePath;
-        } else {
-            this._dir = params.directory ?? app.getPath('downloads');
-            this._fileName = params.fileName;
-        }
-    }
-
-    static _init() {
-        if (Downloader._initVal) return; //只监听一次，不和用户自己的will-download冲突
-        Downloader._initVal = true;
-        session.defaultSession.on("will-download", (event, item) => {
-            const itemUrl = item.getURLChain()[0];
-            Downloader._eventEmitter.emit(itemUrl, item);
-            let savePath = Downloader._filePathMap.get(itemUrl)
-            if (!savePath) {
-                let fileName = Downloader._fileNameMap.get(itemUrl)
-                fileName = fileName ? fileName : item.getFilename();
-                const dir = Downloader._dirMap.get(itemUrl)
-                if(!dir){
-                    throw new Error('Url Mismatch.\n'+itemUrl)
-                }
-                savePath = path.join(dir, fileName)
-            }
-            item.setSavePath(savePath);
-        });
+        Downloader._paramsMap.set(this._url, params)
+        this._init();
     }
 
     /**
@@ -70,12 +40,28 @@ const Downloader = class Downloader {
      * @returns {Promise<DownloadItem>}
      */
     async download() {
-        Downloader._filePathMap.set(this._url, this._filePath);
-        Downloader._dirMap.set(this._url, this._dir);
-        Downloader._fileNameMap.set(this._url, this._fileName);
-        Downloader._init();
         session.defaultSession.downloadURL(this._url, this._params.options);
         return await this._getDownloadItem();
+    }
+
+    _init() {
+        if (Downloader._initVal) return; //只监听一次
+        Downloader._initVal = true;
+        session.defaultSession.on("will-download", (event, item) => {
+            const itemUrl = item.getURLChain()[0];
+            Downloader._eventEmitter.emit(itemUrl, item);
+            const params = Downloader._paramsMap.get(itemUrl)
+            if (!params) {
+                throw new Error('Url Mismatch.\n' + itemUrl)
+            }
+            let savePath = params.filePath
+            if (!savePath) {
+                const fileName = params.fileName ?? item.getFilename();
+                const dir = params.directory ?? app.getPath('downloads');
+                savePath = path.join(dir, fileName)
+            }
+            item.setSavePath(savePath);
+        });
     }
 
     async _getDownloadItem() {
@@ -116,7 +102,7 @@ const Downloader = class Downloader {
      * Returns arg filepath
      */
     get filePath() {
-        return this._filePath;
+        return (Downloader._paramsMap.get(this._url)).filePath
     }
 }
 
